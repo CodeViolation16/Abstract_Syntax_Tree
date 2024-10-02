@@ -11,7 +11,6 @@ LIT is a custom programming language that simplifies code writing and converts i
 - [Quick Start](#quick-start)
 - [Usage Example](#usage-example)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -30,7 +29,7 @@ Follow these simple steps to get started with LIT:
 ### Step 1: Clone the Repository
 
 ```bash
-[git clone https://github.com/your-username/lIT.git](https://github.com/CodeViolation16/Abstract_Syntax_Tree/tree/main)
+git clone:(https://github.com/CodeViolation16/Abstract_Syntax_Tree/tree/main)
 
 
 ### Step 2: Write Your Code in LIT.test and run node main.ts
