@@ -1,30 +1,42 @@
-LIT Programming Language
+# LIT Programming Language 🚀
+
+
+
 LIT is a custom programming language that simplifies code writing and converts it into TypeScript. It uses an Abstract Syntax Tree (AST) to interpret custom syntax and generate clean, readable TypeScript code.
 
-Quick Start
-Follow these steps to get started with LIT:
+---
 
-Step 1: Clone the Repository
-Clone the lIT repository to your local machine:
+## Table of Contents
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Usage Example](#usage-example)
+- [Contributing](#contributing)
+- [License](#license)
 
-bash
-Copy code
-git clone [https://github.com/your-username/lIT.git](https://github.com/CodeViolation16/Abstract_Syntax_Tree/tree/main)
-Step 2: Write LIT Code
-Write your LIT code in the test.lit file located in the project directory, or create a new .lit file. Here's an example:
+---
 
-lit
+## Features ✨
+- **AST-Based Interpretation**: Efficiently interprets LIT syntax and translates it into TypeScript using an Abstract Syntax Tree.
+- **TypeScript Output**: Converts LIT programs into fully functional TypeScript code.
+- **Streamlined Syntax**: Simplifies common programming tasks while ensuring compatibility with TypeScript.
+- **Extensible**: Easily add new language features by extending the interpreter.
 
-lit a = 10;
-if a > 5 {
-    print("a is greater than 5");
-}
+---
 
-Step 3: Run the Interpreter
-Run the interpreter to convert your LIT code into TypeScript:
+## Quick Start 🚀
 
-bash
-Copy code
-node main.ts
-This command will parse the test.lit file and generate the corresponding TypeScript output.
+Follow these simple steps to get started with LIT:
+
+### Step 1: Clone the Repository
+
+```bash
+[git clone https://github.com/your-username/lIT.git](https://github.com/CodeViolation16/Abstract_Syntax_Tree/tree/main)
+
+
+### Step 2: Write Your Code in LIT.test and run node main.ts
+
+example:
+lit age = 42
+lit name = "Khanh"
+
 
