@@ -1,42 +1,48 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   BinaryExpr,
   Expr,
   Identifier,
-  NullLiteral,
   NumericLiteral,
   Program,
   Stmt,
+  VarDeclaration,
 } from "./ast.ts";
 
 import { Token, tokenize, TokenType } from "./lexer.ts";
 
+/**
+ * Frontend for producing a valid AST from sourcode
+ */
 export default class Parser {
   private tokens: Token[] = [];
 
+  /*
+   * Determines if the parsing is complete and the END OF FILE Is reached.
+   */
   private not_eof(): boolean {
     return this.tokens[0].type != TokenType.EOF;
   }
 
-  public produceAST(sourceCode: string): Program {
-    this.tokens = tokenize(sourceCode);
-    const program: Program = {
-      kind: "Program",
-      body: [],
-    };
-
-    while (this.not_eof()) {
-      program.body.push(this.parse_stmt());
-    }
-    return program;
-  }
-
+  /**
+   * Returns the currently available token
+   */
   private at() {
     return this.tokens[0] as Token;
   }
+
+  /**
+   * Returns the previous token and then advances the tokens array to the next value.
+   */
   private eat() {
     const prev = this.tokens.shift() as Token;
     return prev;
   }
+
+  /**
+   * Returns the previous token and then advances the tokens array to the next value.
+   *  Also checks the type of expected token and throws if the values dnot match.
+   */
   private expect(type: TokenType, err: any) {
     const prev = this.tokens.shift() as Token;
     if (!prev || prev.type != type) {
@@ -47,14 +53,81 @@ export default class Parser {
     return prev;
   }
 
-  private parse_stmt(): Stmt {
-    return this.parse_expr();
+  public produceAST(sourceCode: string): Program {
+    this.tokens = tokenize(sourceCode);
+    const program: Program = {
+      kind: "Program",
+      body: [],
+    };
+
+    // Parse until end of file
+    while (this.not_eof()) {
+      program.body.push(this.parse_stmt());
+    }
+
+    return program;
   }
 
+  // Handle complex statement types
+  private parse_stmt(): Stmt {
+    // skip to parse_expr
+    switch (this.at().type) {
+      case TokenType.Let:
+      case TokenType.Const:
+        return this.parse_var_declaration();
+      default:
+        return this.parse_expr();
+    }
+  }
+
+  // LET IDENT;
+  // ( LET | CONST ) IDENT = EXPR;
+  parse_var_declaration(): Stmt {
+    const isConstant = this.eat().type == TokenType.Const;
+    const identifier = this.expect(
+      TokenType.Identifier,
+      "Expected identifier name following let | const keywords.",
+    ).value;
+
+    if (this.at().type == TokenType.Semicolon) {
+      this.eat(); // expect semicolon
+      if (isConstant) {
+        throw "Must assigne value to constant expression. No value provided.";
+      }
+
+      return {
+        kind: "VarDeclaration",
+        identifier,
+        constant: false,
+      } as VarDeclaration;
+    }
+
+    this.expect(
+      TokenType.Equals,
+      "Expected equals token following identifier in var declaration.",
+    );
+
+    const declaration = {
+      kind: "VarDeclaration",
+      value: this.parse_expr(),
+      identifier,
+      constant: isConstant,
+    } as VarDeclaration;
+
+    this.expect(
+      TokenType.Semicolon,
+      "Variable declaration statment must end with semicolon.",
+    );
+
+    return declaration;
+  }
+
+  // Handle expressions
   private parse_expr(): Expr {
     return this.parse_additive_expr();
   }
 
+  // Handle Addition & Subtraction Operations
   private parse_additive_expr(): Expr {
     let left = this.parse_multiplicitave_expr();
 
@@ -72,6 +145,7 @@ export default class Parser {
     return left;
   }
 
+  // Handle Multiplication, Division & Modulo Operations
   private parse_multiplicitave_expr(): Expr {
     let left = this.parse_primary_expr();
 
@@ -91,28 +165,40 @@ export default class Parser {
     return left;
   }
 
+  // Orders Of Prescidence
+  // AdditiveExpr
+  // MultiplicitaveExpr
+  // PrimaryExpr
+
+  // Parse Literal Values & Grouping Expressions
   private parse_primary_expr(): Expr {
     const tk = this.at().type;
+
+    // Determine which token we are currently at and return literal value
     switch (tk) {
-      case TokenType.Null:
-        this.eat();
-        return { kind: "NullLiteral", value: "null" } as NullLiteral;
+      // User defined values.
       case TokenType.Identifier:
         return { kind: "Identifier", symbol: this.eat().value } as Identifier;
+
+      // Constants and Numeric Constants
       case TokenType.Number:
         return {
           kind: "NumericLiteral",
           value: parseFloat(this.eat().value),
         } as NumericLiteral;
+
+      // Grouping Expressions
       case TokenType.OpenParen: {
-        this.eat();
+        this.eat(); // eat the opening paren
         const value = this.parse_expr();
         this.expect(
           TokenType.CloseParen,
           "Unexpected token found inside parenthesised expression. Expected closing parenthesis.",
-        );
+        ); // closing paren
         return value;
       }
+
+      // Unidentified Tokens and Invalid Code Reached
       default:
         console.error("Unexpected token found during parsing!", this.at());
         Deno.exit(1);
